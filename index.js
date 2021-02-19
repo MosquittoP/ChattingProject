@@ -7,23 +7,27 @@ app.get('/',function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
 
-var count=1;
 io.on('connection', function(socket){
   console.log('user connected: ', socket.id);
-  var name = "user" + count++;
-  io.to(socket.id).emit('change name',name);
+  var num = Math.floor((Math.random() * (99999 - 10000))) + 10000;
+  var name = "익명_" + num;
+  var msg = name + "님이 입장하셨습니다.";
+  io.to(socket.id).emit('change name', name);
+  io.emit('receive message', msg);
 
   socket.on('disconnect', function(){
     console.log('user disconnected: ', socket.id);
+    msg = name + "님이 퇴장하셨습니다.";
+    io.emit('receive message', msg);
   });
 
-  socket.on('send message', function(name,text){
-    var msg = name + ' : ' + text;
-    console.log(msg);
+  socket.on('send message', function(name, text){
+    msg = name + ' : ' + text;
+    console.log(socket.id + " : " + text);
     io.emit('receive message', msg);
   });
 });
 
-http.listen(3000, function(){
+http.listen(80, function(){
   console.log('server on');
 });
